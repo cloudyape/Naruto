@@ -7,7 +7,9 @@ class MyHandler(SimpleHTTPRequestHandler):
         data = json.load(f)
         for i in data['routes']:
             if self.path == i['path']:
+                print(i['path'] + "   " + i['component'])
                 self.path = "src/components/" + i['component']
+                print(self.path)
         f.close()
         return SimpleHTTPRequestHandler.do_GET(self)
 

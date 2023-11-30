@@ -200,7 +200,7 @@ def main(file_path):
                     file.write('''
 {"routes": [
     {"path": "/", "component": "app/app.component.html"}, 
-    {"path": "/abc", "component": "app/app.component.html"}
+    {"path": "/tagName", "component": "app/app.component.html"}
     ]
 }                               
                                ''')
@@ -222,12 +222,41 @@ def main(file_path):
                             os.makedirs(os.path.join(file_path, directory), exist_ok=True)
                         except FileExistsError:
                             print(f"Directory {os.path.join(file_path, directory)} already exists. Skipping creation.")
+                    file = io.open("src/static/js/main.js", "w", encoding='utf-8')
+                    file.write('''
+function loadTag(tagName) {
+    document.addEventListener("DOMContentLoaded", function() {
+        var tagNameTags = document.querySelectorAll(tagName);
+        tagNameTags.forEach(function(tagNameTag, index) {
+            var fileName = 'src/components/' + tagName + "/" + tagName + '.component.html'; // Adjust the filename as needed
+
+            // Load content from the corresponding HTML file
+            loadContent(fileName, function(response) {
+                // Set the content inside the <tagName> tag
+                tagNameTag.innerHTML = response;
+            });
+        });
+
+        function loadContent(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    callback(xhr.responseText);
+                }
+            };
+            xhr.open("GET", url, true);
+            xhr.send();
+        }
+    });
+}
+                               ''')
                     file = io.open("src/components/app/app.component.html", "w", encoding='utf-8')
                     file.write('''
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="src/static/js/main.js"></script>
 <link href="src/static/css/style.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <link href="src/components/app/app.component.css" rel="stylesheet">
@@ -297,11 +326,39 @@ html, body {
             print("**************************************************")
             split_comp = user_input.lower().split(" ")
             try:
-                os.mkdir(file_path + "/src/components/" +split_comp[3])
-                file = open(file_path + "/src/components/" + split_comp[3] + "/" +split_comp[3]+".component.html", 'w')
+                os.mkdir("src/components/" +split_comp[3])
+                file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.html", 'w')
                 file.write(f'''
-<link href="src/components/{split_comp[3]}.component.css" rel="stylesheet">
-<script src="src/components/{split_comp[3]}.component.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="src/static/js/main.js"></script>
+<link href="src/static/css/style.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to dynamically add a stylesheet
+    function addStyleSheet(url) {{
+      var link = document.createElement('link');
+      link.href = url;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }}
+
+    // Function to dynamically add a script
+    function addScript(url) {{
+        console.log(url);
+      var script = document.createElement('script');
+      script.src = url;
+      document.head.appendChild(script);
+    }}
+      // Add the stylesheet dynamically
+    addStyleSheet("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
+    // Add the script dynamically
+    addScript("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
+</script>
+<!-------------HTML BELOW-------------->
 <div class="{split_comp[3]}_component" id="{split_comp[3]}_component">
     <div class="text">
         <h1>{split_comp[3]} component Work... Hisss!!!</h1>
@@ -310,15 +367,15 @@ html, body {
 ''')
 
                 file.close()
-                file = open(file_path + "/src/components/" + split_comp[3] + "/" +split_comp[3]+".component.css", 'w')
+                file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.css", 'w')
                 file.close()
-                file = open(file_path + "/src/components/" + split_comp[3] + "/" +split_comp[3]+".component.js", 'w')
+                file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.js", 'w')
                 file.close()
-                file = open(file_path + "/src/components/" + split_comp[3] + "/" +split_comp[3]+".component.test.js", 'w')
+                file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.test.js", 'w')
                 file.close()
+                print("Generated New Component " + split_comp[3])
             except Exception as e:
                 print(e)
-            print("Generated New Component " + split_comp[3])
             print("**************************************************")
         else:
             print("Invalid command. Type 'saanp run' to start the server or 'exit' to quit.")
