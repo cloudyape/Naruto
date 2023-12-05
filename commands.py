@@ -222,26 +222,37 @@ def main(file_path):
                             os.makedirs(os.path.join(file_path, directory), exist_ok=True)
                         except FileExistsError:
                             print(f"Directory {os.path.join(file_path, directory)} already exists. Skipping creation.")
+                    file = io.open("backend/app/index.py", "w", encoding='utf-8')
+                    file.write('''import json
+
+def handle_api_request(path):
+    # Handle API requests here
+    if path == "/api/data":
+        return {'message': 'Hello from API!'}
+    else:
+        return {'error': 'Endpoint not found'}''')
                     file = io.open("src/static/js/main.js", "w", encoding='utf-8')
                     file.write('''
+
 function loadTag(tagName) {
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         var tagNameTags = document.querySelectorAll(tagName);
-        tagNameTags.forEach(function(tagNameTag, index) {
+        tagNameTags.forEach(function (tagNameTag, index) {
             var fileName = 'src/components/' + tagName + "/" + tagName + '.component.html'; // Adjust the filename as needed
 
             // Load content from the corresponding HTML file
-            loadContent(fileName, function(response) {
+            loadContent(fileName, function (response) {
                 // Set the content inside the <tagName> tag
                 tagNameTag.innerHTML = response;
+                executeScriptsInElement(tagNameTag);
             });
         });
 
         function loadContent(url, callback) {
             var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    callback(xhr.responseText);
+                    callback(xhr.response);
                 }
             };
             xhr.open("GET", url, true);
@@ -249,6 +260,89 @@ function loadTag(tagName) {
         }
     });
 }
+
+async function executeScriptsInElement(element) {
+    var scripts = element.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+        await eval(scripts[i].innerHTML);
+        console.log('retele', returnHtml)
+        await updateHtml();
+    }
+}
+
+function callApi(apiName, responseType) {
+    return fetch(apiName)
+        .then(response => {
+            if (responseType === 'text') {
+                return response.text();
+            } else if (responseType === 'json') {
+                return response.json();
+            } else if (responseType === 'blob') {
+                return response.blob();
+            } else {
+                // Handle other response types as needed
+                throw new Error('Unsupported response type');
+            }
+        });
+}
+
+function updateHtml() {
+
+    // Sample HTML content with variables
+    var getFullHtml = returnHtml()
+
+    // Regular expression to match the content inside ${{}}
+    var regex = /\${(.*?)}/g;
+    // Extract data from matched patterns
+    var matches = getFullHtml.match(regex);
+
+    if (matches) {
+        // Loop through extracted variable names
+        for (let i = 0; i < matches.length; i++) {
+            // Extract the variable name from the match
+            var variableName = matches[i].match(/\${(.*?)}/)[1];
+
+            // Check if the variable with the same name is defined
+            if (window.hasOwnProperty(variableName)) {
+                // Print the value of the variable
+                getFullHtml = getFullHtml.replace(matches[i], "<data class='" + /\${(.*?)}/.exec(matches[i])[1] + "'>" + window[variableName] + "</data>");
+            } else {
+                console.log(`Variable ${variableName} is not defined.`);
+            }
+        }
+    }
+    console.log('myhtml', getFullHtml);
+    document.getElementsByTagName("html")[0].innerHTML = getFullHtml;
+}
+
+function updateVariable(variableName, variableValue) {
+    // Sample HTML content with variables
+    var getFullHtml = returnHtml();
+    // Find the element with the specified class name
+    var element = document.querySelectorAll('data.' + variableName);
+
+    // Check if the element exists and has the expected class name
+    element.forEach(element => {
+        if (element && element.classList.contains(variableName)) {
+            console.log('gggg', element.innerHTML);
+            // Return the inner HTML of the element
+            element.innerHTML = variableValue;
+        } else {
+            // Return a message indicating that the element was not found
+            return 'Element with class "' + variableName + '" not found';
+        }
+    });
+}
+
+function returnHtml() {
+    // Sample HTML content with variables
+    var getFullHtml = document.getElementsByTagName("html")[0].innerHTML;
+    return getFullHtml;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    updateHtml();
+});
                                ''')
                     file = io.open("src/components/app/app.component.html", "w", encoding='utf-8')
                     file.write('''
@@ -311,6 +405,7 @@ html, body {
                                ''')
                     file = io.open("src/components/app/app.component.js", "w", encoding='utf-8')
                     file.write('''''')
+                    file.close()
                     print(f"Saanp Project Setup Complete")
                     print("**************************************************")
                     print("Killing Saanp")
@@ -370,6 +465,13 @@ html, body {
                 file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.css", 'w')
                 file.close()
                 file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.js", 'w')
+                file.write('''
+                
+                
+                
+/***********************Write all JS above this ******************/
+updateHtml()
+                ''')
                 file.close()
                 file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.test.js", 'w')
                 file.close()
