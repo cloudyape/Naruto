@@ -41,7 +41,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         requested_path = self.path
 
         if requested_path.endswith('/'):
-            requested_path += 'index.html'
+            requested_path += 'flag.html'
 
         self.path = requested_path
 
@@ -151,7 +151,7 @@ def main(file_path):
     while True:
         user_input = input("Welcome to Saanp!...Hisssss!!!...Enter a Command : ")
         
-        index_html_path = "./index.html"  # Replace with the actual path of index.html
+        index_html_path = "./flag.html"  # Replace with the actual path of flag.html
 
         if user_input.lower() == "saanp run":
             if not os.path.exists(index_html_path):
@@ -172,7 +172,7 @@ def main(file_path):
                 if not os.path.exists(index_html_path):
                 
                     print("**************************************************")
-                    file = io.open("index.html", "w", encoding='utf-8')
+                    file = io.open("flag.html", "w", encoding='utf-8')
                     file.write('''
 
 <!DOCTYPE html>
