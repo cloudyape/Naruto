@@ -11,7 +11,7 @@ import io
 from bs4 import BeautifulSoup
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
- 
+ #ttttt
 def get_dir_size(path='.'):
     total = 0
     with os.scandir(path) as it:
