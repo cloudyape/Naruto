@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 import os
@@ -7,6 +8,7 @@ import signal
 import webbrowser
 import threading
 import io
+from bs4 import BeautifulSoup
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
  
@@ -50,6 +52,49 @@ class MyHandler(SimpleHTTPRequestHandler):
             result = SimpleHTTPRequestHandler.do_GET(self)
 
         return result
+
+def remove_dom_content_loaded(filename):
+    with open(filename, 'r') as file:
+        content = file.read()
+
+    # Use regular expression to remove the specified block
+    pattern = re.compile(r'document\.addEventListener\("DOMContentLoaded",\s*function\s*\(\)\s*{.*?}\);', re.DOTALL)
+    content = re.sub(pattern, '', content)
+
+    with open(filename, 'w') as file:
+        file.write(content)
+
+def add_base_url(html_file, base_url):
+    with open(html_file, 'r') as f:
+        soup = BeautifulSoup(f, 'html.parser')
+
+    for tag in soup.find_all(['script', 'link']):
+        if tag.has_attr('src') and not tag['src'].startswith(('http', '//')):
+            tag['src'] = f"{base_url}/{tag['src']}"
+            with open(html_file, 'w') as f:
+                f.write(str(soup))
+        elif tag.name == 'link' and tag.has_attr('href') and not tag['href'].startswith(('http', '//')):
+            tag['href'] = f"{base_url}/{tag['href']}"
+            with open(html_file, 'w') as f:
+                f.write(str(soup))
+        else:
+            # Replace "http://" + window.location.href with base_url in text content
+            fileText = open(html_file, 'r').read()
+                    
+            with open(html_file, 'w') as f:
+                text_node = fileText.replace("\"http://\"+window.location.href", "'" + base_url + "'")
+                f.write(text_node)
+
+
+def process_directory(directory_path, base_url):
+    for root, dirs, files in os.walk(directory_path):
+        for filename in files:
+            if filename.endswith(".html"):
+                html_file_path = os.path.join(root, filename)
+                add_base_url(html_file_path, base_url)
+                print("**********************************************")
+                print("added " + base_url + " to " + html_file_path)
+                print("**********************************************")
 
 
 def run_port(port, my_file_path, newStatus):
@@ -355,6 +400,27 @@ document.addEventListener("DOMContentLoaded", function () {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <link href="src/components/app/app.component.css" rel="stylesheet">
 <script src="src/components/app/app.component.js"></script>
+<script>
+    // Function to dynamically add a stylesheet
+    function addStyleSheet(url) {{
+      var link = document.createElement('link');
+      link.href = url;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }}
+
+    // Function to dynamically add a script
+    function addScript(url) {{
+        console.log(url);
+      var script = document.createElement('script');
+      script.src = url;
+      document.head.appendChild(script);
+    }}
+      // Add the stylesheet dynamically
+    addStyleSheet("http://"+window.location.href + '/src/components/app/app.component.css');
+    // Add the script dynamically
+    addScript("http://"+window.location.href + '/src/components/app/app.component.js');
+</script>
 <div class="app_component" id="app_component">
     <div class="text">
         <h1>Welcome to Saanp... Hisss!!!</h1>
@@ -404,7 +470,13 @@ html, body {
 }           
                                ''')
                     file = io.open("src/components/app/app.component.js", "w", encoding='utf-8')
-                    file.write('''''')
+                    file.write('''
+                               
+                               
+                               
+/***********************Write all JS above this ******************/
+updateHtml()                               
+                               ''')
                     file.close()
                     print(f"Saanp Project Setup Complete")
                     print("**************************************************")
@@ -430,7 +502,8 @@ html, body {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="src/static/js/main.js"></script>
-<link href="src/static/css/style.css" rel="stylesheet">
+<link href="/src/components/{split_comp[3]}/{split_comp[3]}.component.css" rel="stylesheet">
+<script src="/src/components/{split_comp[3]}/{split_comp[3]}.component.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Function to dynamically add a stylesheet
@@ -449,9 +522,9 @@ html, body {
       document.head.appendChild(script);
     }}
       // Add the stylesheet dynamically
-    addStyleSheet("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
+    addStyleSheet("http://"+window.location.href + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
     // Add the script dynamically
-    addScript("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
+    addScript("http://"+window.location.href + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
 </script>
 <!-------------HTML BELOW-------------->
 <div class="{split_comp[3]}_component" id="{split_comp[3]}_component">
@@ -479,6 +552,9 @@ updateHtml()
             except Exception as e:
                 print(e)
             print("**************************************************")
+        elif user_input.lower().startswith("saanp deploy"):
+            base_url_input = input("Enter Base URL : ")
+            process_directory('src', base_url_input)
         else:
             print("Invalid command. Type 'saanp run' to start the server or 'exit' to quit.")
 
