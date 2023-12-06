@@ -78,11 +78,11 @@ def add_base_url(html_file, base_url):
             with open(html_file, 'w') as f:
                 f.write(str(soup))
         else:
-            # Replace "http://" + window.location.href with base_url in text content
+            # Replace "http://" + window.location.host with base_url in text content
             fileText = open(html_file, 'r').read()
                     
             with open(html_file, 'w') as f:
-                text_node = fileText.replace("\"http://\"+window.location.href", "'" + base_url + "'")
+                text_node = fileText.replace("\"http://\"+window.location.host", "'" + base_url + "'")
                 f.write(text_node)
 
 
@@ -417,9 +417,9 @@ document.addEventListener("DOMContentLoaded", function () {
       document.head.appendChild(script);
     }}
       // Add the stylesheet dynamically
-    addStyleSheet("http://"+window.location.href + '/src/components/app/app.component.css');
+    addStyleSheet("http://"+window.location.host + '/src/components/app/app.component.css');
     // Add the script dynamically
-    addScript("http://"+window.location.href + '/src/components/app/app.component.js');
+    addScript("http://"+window.location.host + '/src/components/app/app.component.js');
 </script>
 <div class="app_component" id="app_component">
     <div class="text">
@@ -522,9 +522,9 @@ updateHtml()
       document.head.appendChild(script);
     }}
       // Add the stylesheet dynamically
-    addStyleSheet("http://"+window.location.href + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
+    addStyleSheet("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
     // Add the script dynamically
-    addScript("http://"+window.location.href + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
+    addScript("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
 </script>
 <!-------------HTML BELOW-------------->
 <div class="{split_comp[3]}_component" id="{split_comp[3]}_component">
