@@ -9,6 +9,7 @@ import webbrowser
 import threading
 import io
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
  
@@ -77,13 +78,12 @@ def add_base_url(html_file, base_url):
             tag['href'] = f"{base_url}/{tag['href']}"
             with open(html_file, 'w') as f:
                 f.write(str(soup))
-        else:
-            # Replace "http://" + window.location.host with base_url in text content
-            fileText = open(html_file, 'r').read()
-                    
-            with open(html_file, 'w') as f:
-                text_node = fileText.replace("\"http://\"+window.location.host", "'" + base_url + "'")
-                f.write(text_node)
+        # Replace "http://" + window.location.host with base_url in text content
+        fileText = open(html_file, 'r').read()
+                
+        with open(html_file, 'w') as f:
+            text_node = fileText.replace("\"http://\"+window.location.host", "'" + base_url + "'")
+            f.write(text_node)
 
 
 def process_directory(directory_path, base_url):
@@ -110,10 +110,9 @@ def run_port(port, my_file_path, newStatus):
             try:
                 if newStatus != status:
                     print(f"Starting server on Port .... {port}")
-                    server_command = [sys.executable, 'custom_server.py', my_file_path, port]
+                    server_command = [sys.executable, '-B' ,  'custom_server.py', port]
                     p = subprocess.Popen(
                         server_command, cwd=os.path.dirname(os.path.realpath(__file__)))
-                    print(f"Server started at http://localhost:{port}")
 
                     # Wait for the subprocess to finish
                     p.wait()
@@ -124,7 +123,7 @@ def run_port(port, my_file_path, newStatus):
                 print(e)
 
             except KeyboardInterrupt:
-                print("Saanp Dead")
+                print("Naruto at Rest")
                 p.terminate()
 
             # Kill the subprocess after 1 second
@@ -133,7 +132,7 @@ def run_port(port, my_file_path, newStatus):
 
 
 def no_setup():
-    print("Error: You need to set up the project... Solution: Use Command -> saanp setup new")
+    print("Error: You need to set up the project... Solution: Use Command -> naruto setup new")
 
 def error(problem, solution):
     print(f"Error: {problem}... Solution: {solution}")
@@ -149,16 +148,16 @@ def main(file_path):
     newStatus = 0
     file_path = "./"
     while True:
-        user_input = input("Welcome to Saanp!...Hisssss!!!...Enter a Command : ")
+        user_input = input("Welcome to naruto!......Enter a Command : ")
         
         index_html_path = "./flag.html"  # Replace with the actual path of flag.html
 
-        if user_input.lower() == "saanp run":
+        if user_input.lower() == "naruto run":
             if not os.path.exists(index_html_path):
                 no_setup()
             else:
                 run_port('8000', file_path, 0)
-        elif user_input.lower().startswith("saanp run port"):
+        elif user_input.lower().startswith("naruto run port"):
             if not os.path.exists(index_html_path):
                 no_setup()
             else:
@@ -167,7 +166,7 @@ def main(file_path):
                     run_port(split_ip[3], file_path, 0)
                 except IndexError:
                     run_port("8000", file_path, 0)
-        elif user_input.lower().startswith("saanp setup new"):
+        elif user_input.lower().startswith("naruto setup new"):
             try:
                 if not os.path.exists(index_html_path):
                 
@@ -278,41 +277,49 @@ def handle_api_request(path):
         return {'error': 'Endpoint not found'}''')
                     file = io.open("src/static/js/main.js", "w", encoding='utf-8')
                     file.write('''
-
 function loadTag(tagName) {
     document.addEventListener("DOMContentLoaded", function () {
         var tagNameTags = document.querySelectorAll(tagName);
+        
         tagNameTags.forEach(function (tagNameTag, index) {
-            var fileName = 'src/components/' + tagName + "/" + tagName + '.component.html'; // Adjust the filename as needed
+            var fileName = '../../../src/components/' + tagName + "/" + tagName + '.component.html'; // Adjust the filename as needed
 
             // Load content from the corresponding HTML file
             loadContent(fileName, function (response) {
                 // Set the content inside the <tagName> tag
+                console.log('blloook', response);
                 tagNameTag.innerHTML = response;
                 executeScriptsInElement(tagNameTag);
             });
         });
 
         function loadContent(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    callback(xhr.response);
+            // Add a unique query parameter to the URL to prevent caching
+            const noCacheUrl = url + (url.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
+        
+            fetch(noCacheUrl, {
+                cache: 'no-store'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error loading content from ${noCacheUrl}: ${response.status} ${response.statusText}`);
                 }
-            };
-            xhr.open("GET", url, true);
-            xhr.send();
+                return response.text();
+            })
+            .then(callback)
+            .catch(error => console.error('Error loading content:', error));
+        }
+        
+        
+
+        function executeScriptsInElement(element) {
+            var scripts = element.getElementsByTagName('script');
+
+            for (var i = 0; i < scripts.length; i++) {
+                eval(scripts[i].innerHTML);
+            }
         }
     });
-}
-
-async function executeScriptsInElement(element) {
-    var scripts = element.getElementsByTagName('script');
-    for (var i = 0; i < scripts.length; i++) {
-        await eval(scripts[i].innerHTML);
-        console.log('retele', returnHtml)
-        await updateHtml();
-    }
 }
 
 function callApi(apiName, responseType) {
@@ -356,7 +363,6 @@ function updateHtml() {
             }
         }
     }
-    console.log('myhtml', getFullHtml);
     document.getElementsByTagName("html")[0].innerHTML = getFullHtml;
 }
 
@@ -369,7 +375,6 @@ function updateVariable(variableName, variableValue) {
     // Check if the element exists and has the expected class name
     element.forEach(element => {
         if (element && element.classList.contains(variableName)) {
-            console.log('gggg', element.innerHTML);
             // Return the inner HTML of the element
             element.innerHTML = variableValue;
         } else {
@@ -387,7 +392,8 @@ function returnHtml() {
 
 document.addEventListener("DOMContentLoaded", function () {
     updateHtml();
-});
+});                               
+                                                              
                                ''')
                     file = io.open("src/components/app/app.component.html", "w", encoding='utf-8')
                     file.write('''
@@ -395,11 +401,10 @@ document.addEventListener("DOMContentLoaded", function () {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="src/static/js/main.js"></script>
-<link href="src/static/css/style.css" rel="stylesheet">
+<script src="../../../src/static/js/main.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<link href="src/components/app/app.component.css" rel="stylesheet">
-<script src="src/components/app/app.component.js"></script>
+<link href="../../../src/components/app/app.component.css" rel="stylesheet">
+<script src="../../../src/components/app/app.component.js"></script>
 <script>
     // Function to dynamically add a stylesheet
     function addStyleSheet(url) {{
@@ -417,16 +422,17 @@ document.addEventListener("DOMContentLoaded", function () {
       document.head.appendChild(script);
     }}
       // Add the stylesheet dynamically
-    addStyleSheet("http://"+window.location.host + '/src/components/app/app.component.css');
+    addStyleSheet("../../.." + '/src/components/app/app.component.css?'+'nocache=' + new Date().getTime());
     // Add the script dynamically
-    addScript("http://"+window.location.host + '/src/components/app/app.component.js');
+    addScript("../../.." + '/src/components/app/app.component.js?'+'nocache=' + new Date().getTime());
+
 </script>
 <div class="app_component" id="app_component">
     <div class="text">
-        <h1>Welcome to Saanp... Hisss!!!</h1>
+        <h1>Welcome to naruto... Hisss!!!</h1>
     </div>
 </div>               
-                               ''')
+ ''')
                     file = io.open("src/components/app/app.component.css", "w", encoding='utf-8')
                     file.write('''
 html, body {
@@ -478,18 +484,18 @@ html, body {
 updateHtml()                               
                                ''')
                     file.close()
-                    print(f"Saanp Project Setup Complete")
+                    print(f"naruto Project Setup Complete")
                     print("**************************************************")
-                    print("Killing Saanp")
+                    print("Naruto Passes the Internship")
                 else:
-                    error("Project already exists", "Solution: Log on to that project and run -> saanp run")
+                    error("Project already exists", "Solution: Log on to that project and run -> naruto run")
             except Exception as e:
                 print(e)
                 error("This is on us", f'Email us at admin@xanfinity.com\nError: {e}')
         elif user_input.lower() == "exit":
-            print("Saanp dead")
+            print("naruto dead")
             break
-        elif user_input.lower().startswith("saanp n c"):
+        elif user_input.lower().startswith("naruto n c"):
             print("**************************************************")
             split_comp = user_input.lower().split(" ")
             try:
@@ -501,36 +507,39 @@ updateHtml()
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="src/static/js/main.js"></script>
-<link href="/src/components/{split_comp[3]}/{split_comp[3]}.component.css" rel="stylesheet">
-<script src="/src/components/{split_comp[3]}/{split_comp[3]}.component.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../../src/static/js/main.js"></script>
+<script src="../../../src/components/{split_comp[3]}/{split_comp[3]}.component.js"></script>
+<link href="../../../src/components/{split_comp[3]}/{split_comp[3]}.component.css" rel="stylesheets">
 <script>
-    // Function to dynamically add a stylesheet
-    function addStyleSheet(url) {{
-      var link = document.createElement('link');
-      link.href = url;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }}
-
-    // Function to dynamically add a script
-    function addScript(url) {{
-        console.log(url);
-      var script = document.createElement('script');
-      script.src = url;
-      document.head.appendChild(script);
-    }}
-      // Add the stylesheet dynamically
-    addStyleSheet("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css');
-    // Add the script dynamically
-    addScript("http://"+window.location.host + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js');
-</script>
+        // Function to dynamically add a script
+        function addScript(url) {{
+            console.log(url);
+        var script = document.createElement('script');
+        script.src = url;
+        document.head.appendChild(script);
+        }}
+        // Add the script dynamically
+        addScript("../../.." + '/src/components/{split_comp[3]}/{split_comp[3]}.component.js?'+'nocache=' + new Date().getTime());
+    
+    </script>
 <!-------------HTML BELOW-------------->
 <div class="{split_comp[3]}_component" id="{split_comp[3]}_component">
     <div class="text">
         <h1>{split_comp[3]} component Work... Hisss!!!</h1>
     </div>
+    <script>
+        // Function to dynamically add a stylesheet
+        function addStyleSheet(url) {{
+        var link = document.createElement('link');
+        link.href = url;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+        }}
+
+        // Add the stylesheet dynamically
+        addStyleSheet("../../.." + '/src/components/{split_comp[3]}/{split_comp[3]}.component.css?'+'nocache=' + new Date().getTime());
+    
+    </script>
 </div>
 ''')
 
@@ -546,17 +555,15 @@ updateHtml()
 updateHtml()
                 ''')
                 file.close()
-                file = open("src/components/" + split_comp[3] + "/" +split_comp[3]+".component.test.js", 'w')
-                file.close()
                 print("Generated New Component " + split_comp[3])
             except Exception as e:
                 print(e)
             print("**************************************************")
-        elif user_input.lower().startswith("saanp deploy"):
+        elif user_input.lower().startswith("naruto deploy"):
             base_url_input = input("Enter Base URL : ")
             process_directory('src', base_url_input)
         else:
-            print("Invalid command. Type 'saanp run' to start the server or 'exit' to quit.")
+            print("Invalid command. Type 'naruto run' to start the server or 'exit' to quit.")
 
 if __name__ == "__main__":
     main("")

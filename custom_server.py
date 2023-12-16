@@ -1,5 +1,7 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
+import sys
+import os
 from backend.app.index import handle_api_request
 class MyHandler(SimpleHTTPRequestHandler):
 
@@ -23,11 +25,17 @@ class MyHandler(SimpleHTTPRequestHandler):
             return SimpleHTTPRequestHandler.do_GET(self)
             
 
-
-def run_custom_server(port, my_file_path):
+def run_custom_server(port):
     handler = MyHandler
     server = HTTPServer(('localhost', port), handler)
+    print(f"Server started on port {port}")
     server.serve_forever()
 
 if __name__ == "__main__":
-    run_custom_server(8000, "")
+    # Get the port from the command-line arguments
+    if len(sys.argv) < 2:
+        print("Usage: python custom_server.py <port>")
+        sys.exit(1)
+    port = int(sys.argv[1])
+
+    run_custom_server(port)
