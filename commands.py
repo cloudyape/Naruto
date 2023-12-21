@@ -172,7 +172,7 @@ def main(file_path):
                 
                     print("**************************************************")
                     file = io.open("flag.html", "w", encoding='utf-8')
-                    file.write('''
+                    file.write(r'''
 
 <!DOCTYPE html>
 <html>
@@ -276,7 +276,7 @@ def handle_api_request(path):
     else:
         return {'error': 'Endpoint not found'}''')
                     file = io.open("src/static/js/main.js", "w", encoding='utf-8')
-                    file.write('''
+                    file.write(r'''
 function loadTag(tagName) {
     document.addEventListener("DOMContentLoaded", function () {
         var tagNameTags = document.querySelectorAll(tagName);
