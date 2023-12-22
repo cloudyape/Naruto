@@ -30,8 +30,7 @@ def handle_api_request(path, payload=None):
     else:
         return {'error': 'Endpoint not found'}
 ```
-Then in js in component i use 
-#callApi
+Then in js in component i use callApi
 The syntax of Naruto function callApi is below
 ```callApi('http://localhost:8000/api/data', 'json', 'POST', {'muload': "muload"}).then(
     data => {
