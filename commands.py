@@ -287,6 +287,7 @@ def handle_api_request(path):
         return {'error': 'Endpoint not found'}''')
                     file = io.open("src/static/js/main.js", "w", encoding='utf-8')
                     file.write(r'''
+
 function loadTag(tagName) {
     document.addEventListener("DOMContentLoaded", function () {
         var tagNameTags = document.querySelectorAll(tagName);
@@ -332,8 +333,22 @@ function loadTag(tagName) {
     });
 }
 
-function callApi(apiName, responseType) {
-    return fetch(apiName)
+function callApi(apiName, responseType, method, payload = null, headers = {}) {
+    const options = {
+        method: method,
+        headers: headers
+    };
+
+    if (payload) {
+        if (typeof payload === 'object') {
+            options.body = JSON.stringify(payload);
+            options.headers['Content-Type'] = 'application/json';
+        } else {
+            options.body = payload;
+        }
+    }
+
+    return fetch(apiName, options)
         .then(response => {
             if (responseType === 'text') {
                 return response.text();
@@ -347,6 +362,7 @@ function callApi(apiName, responseType) {
             }
         });
 }
+
 
 function updateHtml() {
 
@@ -402,8 +418,7 @@ function returnHtml() {
 
 document.addEventListener("DOMContentLoaded", function () {
     updateHtml();
-});                               
-                                                              
+});                                                                                          
                                ''')
                     file = io.open("src/components/app/app.component.html", "w", encoding='utf-8')
                     file.write('''

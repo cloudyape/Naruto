@@ -5,9 +5,11 @@ import os
 from backend.app.index import handle_api_request
 class MyHandler(SimpleHTTPRequestHandler):
 
-    def do_GET(self):
+    def do_GET(self, payload=None):
         if self.path.startswith("/api"):
-            api_response = handle_api_request(self.path)
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            api_response = handle_api_request(self.path, post_data)
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -23,6 +25,16 @@ class MyHandler(SimpleHTTPRequestHandler):
                     
             f.close()
             return SimpleHTTPRequestHandler.do_GET(self)
+    
+    def do_POST(self , payload=None):
+        if self.path.startswith("/api"):
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            api_response = handle_api_request(self.path, post_data)
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(api_response).encode('utf-8'))
             
 
 def run_custom_server(port):
