@@ -279,7 +279,7 @@ def handle_open_ai_key():
                     file = io.open("backend/app/index.py", "w", encoding='utf-8')
                     file.write('''import json
 
-def handle_api_request(path):
+def handle_api_request(path, payload=None):
     # Handle API requests here
     if path == "/api/data":
         return {'message': 'Hello from API!'}
