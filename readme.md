@@ -11,7 +11,7 @@ Naruto is a full stack Python Development library. It really fun and Easy.
 
 For Further Docs : Please log into https://naruto.design
 
-## Update to we uploaded soon to website
+## Update to be uploaded soon to website
 Here how I handedled post request
 In index.py
 import json
