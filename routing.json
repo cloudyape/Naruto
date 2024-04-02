@@ -1,0 +1,12 @@
+
+{"routes": [
+    {"path": "/", "component": "app/app.component.html"}, 
+    {"path": "/aicouncellor", "component": "aicouncellor/aicouncellor.component.html"},
+    {"path": "/pythonbuzz", "component": "pythonbuzz/pythonbuzz.component.html"},
+    {"path": "/teacher", "component": "teacher/teacher.component.html"},
+    {"path": "/youtube", "component": "youtube/youtube.component.html"},
+    {"path": "/livestream", "component": "livestream/livestream.component.html"},
+    {"path": "/fed", "component": "fed/fed.component.html"}
+    ]
+}                               
+                               
