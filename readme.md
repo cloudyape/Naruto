@@ -32,8 +32,7 @@ def handle_api_request(path, payload=None):
 ```
 Then in js in component i use callApi
 The syntax of Naruto function callApi is below
-```
-callApi('http://localhost:8000/api/data', 'json', 'POST', {'muload': "muload"}).then(
+```callApi('http://localhost:8000/api/data', 'json', 'POST', {'muload': "muload"}).then(
     data => {
         console.log('mydata' , data);
     }
